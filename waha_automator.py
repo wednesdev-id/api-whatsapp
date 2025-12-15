@@ -290,15 +290,29 @@ class WahaAPIClient:
 
             if response.status_code == 200:
                 data = response.json()
-                # Handle different response structures
-                if isinstance(data, list):
-                    messages = data
-                elif isinstance(data, dict):
-                    messages = data.get('messages', data.get('data', []))
-                else:
-                    messages = []
+                print(f"Success! Retrieved messages from {url}")
 
-                print(f"Success! Retrieved {len(messages)} messages")
+                # Return the raw response from WAHA API
+                # Add metadata about the API call
+                if isinstance(data, dict):
+                    data['_meta'] = {
+                        'endpoint': url,
+                        'chat_id': chat_id,
+                        'params': params,
+                        'source': 'waha_api'
+                    }
+                else:
+                    # If response is a list, wrap it
+                    data = {
+                        'data': data,
+                        '_meta': {
+                            'endpoint': url,
+                            'chat_id': chat_id,
+                            'params': params,
+                            'source': 'waha_api'
+                        }
+                    }
+
                 return data
             else:
                 error_text = response.text
@@ -391,28 +405,30 @@ class WahaAPIClient:
 
                     if response.status_code == 200:
                         data = response.json()
-                        # Handle different response structures
-                        if isinstance(data, list):
-                            chats = data
-                        elif isinstance(data, dict):
-                            chats = data.get('chats', data.get('data', []))
-                        else:
-                            chats = []
+                        print(f"Success! Retrieved data from {url}")
 
-                        print(f"Success! Retrieved {len(chats)} chats from {url}")
-                        return {
-                            "chats": chats,
-                            "total": len(chats),
-                            "limit": limit,
-                            "offset": offset,
-                            "hasMore": len(chats) >= limit,
-                            "page": (offset // limit) + 1 if limit > 0 else 1,
-                            "total_pages": (len(chats) + limit - 1) // limit if limit > 0 else 1,
-                            "sortBy": sort_by,
-                            "sortOrder": sort_order,
-                            "session": session,
-                            "endpoint": url
-                        }
+                        # Return the raw response from WAHA API
+                        # Add metadata about the API call
+                        if isinstance(data, dict):
+                            data['_meta'] = {
+                                'endpoint': url,
+                                'session': session,
+                                'params': params,
+                                'source': 'waha_api'
+                            }
+                        else:
+                            # If response is a list, wrap it
+                            data = {
+                                'data': data,
+                                '_meta': {
+                                    'endpoint': url,
+                                    'session': session,
+                                    'params': params,
+                                    'source': 'waha_api'
+                                }
+                            }
+
+                        return data
                     elif response.status_code == 404:
                         print(f"Endpoint not found: {url}")
                         continue  # Try next endpoint
@@ -512,42 +528,57 @@ class WahaAPIClient:
             "Saya setuju dengan itu", "Kapan kita mulai?", "Bagaimana progresnya?"
         ]
 
-        # Generate all chats first
+        # Generate realistic number of chats (not based on offset + limit)
         all_chats = []
-        total_needed = limit + offset  # Generate enough to handle offset
+        # Only generate up to 50 chats total for realistic WhatsApp usage
+        max_realistic_chats = 50
 
-        for i in range(total_needed):
-            if i < len(base_sample_chats):
-                # Use base sample chats first
-                chat = base_sample_chats[i].copy()
+        # Start with base sample chats
+        for i in range(len(base_sample_chats)):
+            chat = base_sample_chats[i].copy()
+            # Add additional fields for compatibility
+            chat.update({
+                "pushname": chat["name"],
+                "profilePicUrl": None,
+                "lastMessageTime": chat["timestamp"] * 1000,  # Convert to milliseconds
+                "isMyContact": True,
+                "isWAContact": True,
+                "isArchived": False,
+                "isPinned": False,
+                "isMuted": False
+            })
+            all_chats.append(chat)
+
+        # Generate additional chats if needed (but not more than realistic max)
+        additional_needed = min(max_realistic_chats - len(base_sample_chats), 20)  # Max 20 additional
+
+        for i in range(additional_needed):
+            # Generate new chats dynamically
+            if i % 3 == 0:  # Every 3rd chat is a group
+                group_idx = i // 3
+                chat = {
+                    "id": f"1203634199{random.randint(100000, 999999)}@g.us",
+                    "name": f"{random.choice(group_names)} {group_idx + 1}",
+                    "lastMessage": random.choice(last_messages),
+                    "timestamp": int((datetime.now() - timedelta(hours=random.randint(0, 168))).timestamp()),
+                    "unreadCount": random.randint(0, 20),
+                    "isGroup": True,
+                    "participants": random.randint(3, 50)
+                }
             else:
-                # Generate new chats dynamically
-                if i % 3 == 0:  # Every 3rd chat is a group
-                    group_idx = (i - len(base_sample_chats)) // 3
-                    chat = {
-                        "id": f"1203634199{random.randint(100000, 999999)}@g.us",
-                        "name": f"{random.choice(group_names)} {group_idx + 1}",
-                        "lastMessage": random.choice(last_messages),
-                        "timestamp": int((datetime.now() - timedelta(hours=random.randint(0, 168))).timestamp()),
-                        "unreadCount": random.randint(0, 20),
-                        "isGroup": True,
-                        "participants": random.randint(3, 50)
-                    }
-                else:
-                    # Generate individual chat
-                    name_idx = i - len(base_sample_chats) - (i // 3)
-                    first_name = random.choice(first_names)
-                    last_name = random.choice(last_names)
-                    phone_number = f"628{random.randint(100000000, 999999999)}"
-                    chat = {
-                        "id": f"{phone_number}@c.us",
-                        "name": f"{first_name} {last_name}",
-                        "lastMessage": random.choice(last_messages),
-                        "timestamp": int((datetime.now() - timedelta(hours=random.randint(0, 72))).timestamp()),
-                        "unreadCount": random.randint(0, 10),
-                        "isGroup": False,
-                        "isOnline": random.choice([True, False])
-                    }
+                # Generate individual chat
+                first_name = random.choice(first_names)
+                last_name = random.choice(last_names)
+                phone_number = f"628{random.randint(100000000, 999999999)}"
+                chat = {
+                    "id": f"{phone_number}@c.us",
+                    "name": f"{first_name} {last_name}",
+                    "lastMessage": random.choice(last_messages),
+                    "timestamp": int((datetime.now() - timedelta(hours=random.randint(0, 72))).timestamp()),
+                    "unreadCount": random.randint(0, 10),
+                    "isGroup": False,
+                    "isOnline": random.choice([True, False])
+                }
 
             # Add additional fields for compatibility
             chat.update({
@@ -575,18 +606,35 @@ class WahaAPIClient:
 
         # Apply pagination
         total_chats = len(all_chats)
-        # Ensure offset doesn't exceed total
-        safe_offset = min(offset, total_chats)
-        chats = all_chats[safe_offset:safe_offset + limit]
-        has_more = (safe_offset + limit) < total_chats
+
+        # Handle invalid offset (greater than total)
+        if offset >= total_chats:
+            return {
+                "chats": [],
+                "total": total_chats,
+                "limit": limit,
+                "offset": offset,
+                "hasMore": False,
+                "page": 0,
+                "total_pages": (total_chats + limit - 1) // limit if limit > 0 else 1,
+                "sortBy": sort_by,
+                "sortOrder": sort_order,
+                "session": "default",
+                "mock": True,
+                "message": f"Offset {offset} exceeds total chats {total_chats}",
+                "error": "INVALID_OFFSET"
+            }
+
+        chats = all_chats[offset:offset + limit]
+        has_more = (offset + limit) < total_chats
 
         return {
             "chats": chats,
             "total": total_chats,
             "limit": limit,
-            "offset": safe_offset,
+            "offset": offset,
             "hasMore": has_more,
-            "page": (safe_offset // limit) + 1 if limit > 0 else 1,
+            "page": (offset // limit) + 1 if limit > 0 else 1,
             "total_pages": (total_chats + limit - 1) // limit if limit > 0 else 1,
             "sortBy": sort_by,
             "sortOrder": sort_order,
@@ -626,7 +674,7 @@ class WahaAPIClient:
 
             if not active_sessions:
                 print("[-] No active sessions found. Using mock data instead.")
-                return self.generate_mock_contacts(limit, offset, sort_by, sort_order)
+                return self.generate_mock_chats(limit, offset, sort_by, sort_order)
 
             # Gunakan session pertama yang aktif
             active_session = active_sessions[0]
@@ -671,27 +719,30 @@ class WahaAPIClient:
             # Kita sudah tahu response.status_code == 200 di sini
             if True:
                 data = response.json()
-                # Handle different response structures
-                if isinstance(data, list):
-                    contacts = data
-                elif isinstance(data, dict):
-                    contacts = data.get('contacts', data.get('data', []))
-                else:
-                    contacts = []
+                print(f"Success! Retrieved contacts from {url}")
 
-                print(f"Success! Retrieved {len(contacts)} contacts")
-                return {
-                    "contacts": contacts,
-                    "total": len(contacts),
-                    "limit": limit,
-                    "offset": offset,
-                    "hasMore": len(contacts) >= limit,
-                    "page": (offset // limit) + 1 if limit > 0 else 1,
-                    "total_pages": (len(contacts) + limit - 1) // limit if limit > 0 else 1,
-                    "sortBy": sort_by,
-                    "sortOrder": sort_order,
-                    "session": session
-                }
+                # Return the raw response from WAHA API
+                # Add metadata about the API call
+                if isinstance(data, dict):
+                    data['_meta'] = {
+                        'endpoint': url,
+                        'session': session,
+                        'params': params,
+                        'source': 'waha_api'
+                    }
+                else:
+                    # If response is a list, wrap it
+                    data = {
+                        'data': data,
+                        '_meta': {
+                            'endpoint': url,
+                            'session': session,
+                            'params': params,
+                            'source': 'waha_api'
+                        }
+                    }
+
+                return data
             else:
                 error_text = response.text
                 print(f"Error: {response.status_code} - {error_text}")

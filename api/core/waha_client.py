@@ -237,22 +237,11 @@ class WahaClient:
 
             if response.status_code == 200:
                 data = response.json()
-                messages = data if isinstance(data, list) else data.get('messages', data.get('data', []))
 
+                # Return the raw response from WAHA API
                 return WahaResponse(
                     success=True,
-                    data={
-                        "messages": messages,
-                        "total": len(messages),
-                        "has_more": len(messages) >= limit,
-                        "chat_id": chat_id,
-                        "session": session,
-                        "pagination": {
-                            "limit": limit,
-                            "offset": offset,
-                            "has_more": len(messages) >= limit
-                        }
-                    }
+                    data=data
                 )
             else:
                 error_text = response.text
@@ -334,25 +323,11 @@ class WahaClient:
 
             if response.status_code == 200:
                 data = response.json()
-                contacts = data if isinstance(data, list) else data.get('contacts', data.get('data', []))
 
+                # Return the raw response from WAHA API
                 return WahaResponse(
                     success=True,
-                    data={
-                        "contacts": contacts,
-                        "total": len(contacts),
-                        "limit": limit,
-                        "offset": offset,
-                        "has_more": len(contacts) >= limit,
-                        "session": session,
-                        "pagination": {
-                            "limit": limit,
-                            "offset": offset,
-                            "has_more": len(contacts) >= limit,
-                            "page": (offset // limit) + 1,
-                            "total_pages": (len(contacts) + limit - 1) // limit
-                        }
-                    }
+                    data=data  # Return raw response from WAHA API
                 )
             else:
                 return WahaResponse(
