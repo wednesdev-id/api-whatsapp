@@ -1,0 +1,8 @@
+{
+  "name": "order_confirmation",
+  "category": "order",
+  "content": "🎉 *PESANAN KONFIRMASI* 🎉\n\nHalo {{customer_name}},\n\nTerima kasih telah berbelanja di {{company_name}}!\n\n📋 *Detail Pesanan:*\n• No. Pesanan: {{order_id}}\n• Tanggal: {{date()}}\n• Total: {{currency total_amount}}\n• Metode Pembayaran: {{payment_method}}\n\n📍 *Alamat Pengiriman:*\n{{shipping_address}}\n\n⏰ *Estimasi Pengiriman:*\n{{estimated_delivery}}\n\n📦 *Pesanan Anda:*\n{{#each items}}\n• {{quantity}}x {{name}} - {{currency price}}\n{{/each}}\n\nStatus pesanan dapat dicek kapan saja. Terima kasih! 🙏",
+  "tags": ["order", "confirmation", "receipt"],
+  "variables": ["customer_name", "company_name", "order_id", "total_amount", "payment_method", "shipping_address", "estimated_delivery", "items"],
+  "description": "Order confirmation with complete order details and item list"
+}

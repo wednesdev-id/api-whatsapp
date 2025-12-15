@@ -1,0 +1,28 @@
+{
+  "base_url": "http://localhost:3000",
+  "username": "admin",
+  "password": "e44213b43dc349709991dbb1a6343e47",
+  "api_key": "c79b6529186c44aa9d536657ffea710b",
+  "output_dir": "output",
+  "chats": [
+    {
+      "chat_id": "6282243673017@c.us",
+      "name": "Primary Chat - 6282243673017",
+      "enabled": true,
+      "limit": 100,
+      "sort_by": "timestamp",
+      "sort_order": "desc"
+    }
+  ],
+  "schedule": {
+    "interval_minutes": 30,
+    "enabled_hours": {
+      "start": "08:00",
+      "end": "22:00"
+    }
+  },
+  "retry": {
+    "max_attempts": 3,
+    "delay_seconds": 5
+  }
+}

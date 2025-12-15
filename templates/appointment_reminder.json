@@ -1,0 +1,8 @@
+{
+  "name": "appointment_reminder",
+  "category": "appointment",
+  "content": "⏰ *PENGINGAT JANJI TEMU* ⏰\n\nHalo {{patient_name}},\n\nIni adalah pengingat untuk janji temu Anda:\n\n📅 *Tanggal:* {{appointment_date}}\n🕐 *Waktu:* {{appointment_time}}\n👨‍⚕️ *Dokter:* Dr. {{doctor_name}}\n🏥 *Poli/Klinik:* {{clinic_name}}\n\n📋 *Yang perlu dibawa:*\n- Kartu identitas (KTP/SIM/Paspor)\n- Kartu kontrol/Surat rujukan\n- Hasil lab sebelumnya (jika ada)\n- Daftar obat yang sedang dikonsumsi\n\n⚠️ *Penting:*\n- Datang 15 menit sebelum jadwal\n- Jika tidak bisa hadir, hubungi kami minimal 2 jam sebelumnya\n- Bawa surat kontrol jika ini adalah kunjungan kontrol\n\n📞 *Hubungi kami untuk reschedule/cancel:*\n{{hospital_phone}}\n\nKami menunggu kedatangan Anda! 🙏",
+  "tags": ["appointment", "reminder", "medical", "hospital"],
+  "variables": ["patient_name", "appointment_date", "appointment_time", "doctor_name", "clinic_name", "hospital_phone"],
+  "description": "Medical appointment reminder with preparation checklist"
+}

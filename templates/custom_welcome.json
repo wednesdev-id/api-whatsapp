@@ -1,0 +1,8 @@
+{
+  "name": "custom_welcome",
+  "category": "greeting",
+  "content": "Halo {{customer_name}}! 👋\n\nSelamat datang di {{company_name}}. Kami sangat senang bisa melayani Anda.\n\nAda yang bisa kami bantu hari ini?\n\n📞 Hubungi kami: {{support_phone}}\n🌐 Website: {{website}}",
+  "tags": ["welcome", "greeting", "customer"],
+  "variables": ["customer_name", "company_name", "support_phone", "website"],
+  "description": "Custom welcome message with company branding and contact information"
+}
